@@ -8,15 +8,15 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-// @@@SNIPSTART money-transfer-project-template-go-workflow
-func MoneyTransfer(ctx workflow.Context, input PaymentDetails) (string, error) {
+func ScoreCalculation(ctx workflow.Context, input ScoreProfile) (string, error) {
 
 	// RetryPolicy specifies how to automatically handle retries if an Activity fails.
 	retrypolicy := &temporal.RetryPolicy{
-		InitialInterval:        time.Second,
-		BackoffCoefficient:     2.0,
-		MaximumInterval:        100 * time.Second,
-		MaximumAttempts:        500, // 0 is unlimited retries
+		InitialInterval:    time.Second,
+		BackoffCoefficient: 2.0,
+		MaximumInterval:    100 * time.Second,
+		MaximumAttempts:    500, // 0 is unlimited retries
+		// todo: Error types from Python?
 		NonRetryableErrorTypes: []string{"InvalidAccountError", "InsufficientFundsError"},
 	}
 
@@ -31,39 +31,52 @@ func MoneyTransfer(ctx workflow.Context, input PaymentDetails) (string, error) {
 	// Apply the options.
 	ctx = workflow.WithActivityOptions(ctx, options)
 
-	// Withdraw money.
-	var withdrawOutput string
+	// Retrieve profile.
+	var profileOutput string
 
-	withdrawErr := workflow.ExecuteActivity(ctx, Withdraw, input).Get(ctx, &withdrawOutput)
+	profileErr := workflow.ExecuteActivity(ctx, RetrieveProfile, input).Get(ctx, &profileOutput)
 
-	if withdrawErr != nil {
-		return "", withdrawErr
+	if profileErr != nil {
+		return "", profileErr
 	}
 
-	// Deposit money.
-	var depositOutput string
+	// Calculate golang dimensions
+	var golangDimensionOutput string
+	// todo: pass profile as an input
+	// todo: if dimension weight is zero, then skip calculation entirely
+	golangDimensionErr := workflow.ExecuteActivity(ctx, CalculateDimensions, input).Get(ctx, &golangDimensionOutput)
 
-	depositErr := workflow.ExecuteActivity(ctx, Deposit, input).Get(ctx, &depositOutput)
-
-	if depositErr != nil {
-		// The deposit failed; put money back in original account.
-
-		var result string
-
-		refundErr := workflow.ExecuteActivity(ctx, Refund, input).Get(ctx, &result)
-
-		if refundErr != nil {
-			return "",
-				fmt.Errorf("Deposit: failed to deposit money into %v: %v. Money could not be returned to %v: %w",
-					input.TargetAccount, depositErr, input.SourceAccount, refundErr)
-		}
-
-		return "", fmt.Errorf("Deposit: failed to deposit money into %v: Money returned to %v: %w",
-			input.TargetAccount, input.SourceAccount, depositErr)
+	if golangDimensionErr != nil {
+		return "", golangDimensionErr
 	}
 
-	result := fmt.Sprintf("Transfer complete (transaction IDs: %s, %s)", withdrawOutput, depositOutput)
+	//if golangDimensionErr != nil {
+	//	// The deposit failed; put money back in original account.
+	//
+	//	var result string
+	//
+	//	refundErr := workflow.ExecuteActivity(ctx, Refund, input).Get(ctx, &result)
+	//
+	//	if refundErr != nil {
+	//		return "",
+	//			fmt.Errorf("Deposit: failed to deposit money into %v: %v. Money could not be returned to %v: %w",
+	//				input.TargetAccount, golangDimensionErr, input.SourceAccount, refundErr)
+	//	}
+	//
+	//	return "", fmt.Errorf("Deposit: failed to deposit money into %v: Money returned to %v: %w",
+	//		input.TargetAccount, input.SourceAccount, golangDimensionErr)
+	//}
+
+	// Calculate golang dimensions
+	var scoreOutput string
+	// todo: pass profile as an input
+	// todo: if dimension weight is zero, then skip calculation entirely
+	scoreErr := workflow.ExecuteActivity(ctx, CalculateScore, input).Get(ctx, &scoreOutput)
+
+	if scoreErr != nil {
+		return "", scoreErr
+	}
+
+	result := fmt.Sprintf("Score calculation complete for profile %s, score %s, dimensions %s)", profileOutput, scoreOutput, golangDimensionOutput)
 	return result, nil
 }
-
-// @@@SNIPEND

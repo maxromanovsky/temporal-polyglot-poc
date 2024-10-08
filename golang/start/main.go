@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
-	"log"
-
+	"fmt"
+	"github.com/google/uuid"
 	"go.temporal.io/sdk/client"
+	"log"
+	"math/rand"
+	"strconv"
 
-	"money-transfer-project-template-go/app"
+	"score-polyglot-go/app"
 )
 
-// @@@SNIPSTART money-transfer-project-template-go-start-workflow
 func main() {
 	// Create the client object just once per process
 	c, err := client.Dial(client.Options{})
@@ -20,21 +22,28 @@ func main() {
 
 	defer c.Close()
 
-	input := app.PaymentDetails{
-		SourceAccount: "85-150",
-		TargetAccount: "43-812",
-		Amount:        250,
-		ReferenceID:   "12345",
+	referenceID := rand.Int()
+
+	input := app.ScoreProfile{
+		//SpaceID:  "fooid:4242",
+		//NodeType: "Person",
+		//DimensionWeights: map[string]float64{
+		//	"DimGo1":     0.42,
+		//	"DimGo2":     0.2,
+		//	"DimPython1": 0.95,
+		//},
+		ProfileID:   uuid.NewString(),
+		ReferenceID: strconv.Itoa(referenceID),
 	}
 
 	options := client.StartWorkflowOptions{
-		ID:        "pay-invoice-701",
-		TaskQueue: app.MoneyTransferTaskQueueName,
+		ID:        fmt.Sprintf("score-calculation-%d", referenceID),
+		TaskQueue: app.ScoreCalculationTaskQueueName,
 	}
 
-	log.Printf("Starting transfer from account %s to account %s for %d", input.SourceAccount, input.TargetAccount, input.Amount)
+	log.Printf("Starting calculation for %s", input.ProfileID)
 
-	we, err := c.ExecuteWorkflow(context.Background(), options, app.MoneyTransfer, input)
+	we, err := c.ExecuteWorkflow(context.Background(), options, app.ScoreCalculation, input)
 	if err != nil {
 		log.Fatalln("Unable to start the Workflow:", err)
 	}
@@ -51,5 +60,3 @@ func main() {
 
 	log.Println(result)
 }
-
-// @@@SNIPEND

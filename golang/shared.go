@@ -1,16 +1,11 @@
 package app
 
-// @@@SNIPSTART money-transfer-project-template-go-shared-task-queue
-const MoneyTransferTaskQueueName = "TRANSFER_MONEY_TASK_QUEUE"
+const ScoreCalculationTaskQueueName = "SCORE_CALCULATION_TASK_QUEUE"
 
-// @@@SNIPEND
-
-// @@@SNIPSTART money-transfer-project-template-go-transferdetails
-type PaymentDetails struct {
-	SourceAccount string
-	TargetAccount string
-	Amount        int
-	ReferenceID   string
+type ScoreProfile struct {
+	//SpaceID          string
+	//NodeType         string
+	//DimensionWeights map[string]float64
+	ProfileID   string
+	ReferenceID string
 }
-
-// @@@SNIPEND
