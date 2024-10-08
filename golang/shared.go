@@ -1,6 +1,7 @@
 package app
 
 const ScoreCalculationTaskQueueName = "SCORE_CALCULATION_TASK_QUEUE"
+const PythonDimensionCalculationTaskQueueName = "PYTHON_DIMENSION_CALCULATION_TASK_QUEUE"
 
 type CalculationConfig struct {
 	ProfileID   string

@@ -53,6 +53,31 @@ func ScoreCalculation(ctx workflow.Context, input CalculationConfig) (Score, err
 
 		dimensions = append(dimensions, golangDimensionOutput...)
 	}
+
+	// Calculate Python dimension
+
+	pythonRetrypolicy := &temporal.RetryPolicy{
+		InitialInterval: time.Second,
+		MaximumInterval: 100 * time.Second,
+		MaximumAttempts: 1, // 0 is unlimited retries
+		// todo: Error types from Python?
+		NonRetryableErrorTypes: []string{"InvalidAccountError", "InsufficientFundsError"},
+	}
+
+	aoj := workflow.ActivityOptions{
+		TaskQueue:           PythonDimensionCalculationTaskQueueName,
+		StartToCloseTimeout: 10 * time.Second,
+		RetryPolicy:         pythonRetrypolicy,
+	}
+	pythonCtx := workflow.WithActivityOptions(ctx, aoj)
+
+	var pythonDimensionOutput []Dimension
+	pythonDimensionErr := workflow.ExecuteActivity(pythonCtx, "calculate_dimensions", input, profileOutput).Get(ctx, &pythonDimensionOutput)
+	if pythonDimensionErr != nil {
+		return Score{}, pythonDimensionErr
+	}
+	dimensions = append(dimensions, pythonDimensionOutput...)
+
 	// Calculate score dimensions
 	var scoreOutput Score
 	scoreErr := workflow.ExecuteActivity(ctx, CalculateScore, input, profileOutput, dimensions).Get(ctx, &scoreOutput)
