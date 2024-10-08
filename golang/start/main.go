@@ -24,14 +24,7 @@ func main() {
 
 	referenceID := rand.Int()
 
-	input := app.ScoreProfile{
-		//SpaceID:  "fooid:4242",
-		//NodeType: "Person",
-		//DimensionWeights: map[string]float64{
-		//	"DimGo1":     0.42,
-		//	"DimGo2":     0.2,
-		//	"DimPython1": 0.95,
-		//},
+	input := app.CalculationConfig{
 		ProfileID:   uuid.NewString(),
 		ReferenceID: strconv.Itoa(referenceID),
 	}
@@ -50,7 +43,7 @@ func main() {
 
 	log.Printf("WorkflowID: %s RunID: %s\n", we.GetID(), we.GetRunID())
 
-	var result string
+	var result app.Score
 
 	err = we.Get(context.Background(), &result)
 
