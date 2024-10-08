@@ -10,6 +10,7 @@ from activities import DimensionActivities
 from shared import PYTHON_DIMENSION_CALCULATION_TASK_QUEUE
 # from workflows import MoneyTransfer
 
+# todo: check https://docs.temporal.io/encyclopedia/python-sdk-sandbox
 
 async def main() -> None:
     client: Client = await Client.connect("localhost:7233", namespace="default")

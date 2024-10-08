@@ -59,6 +59,8 @@ func ScoreCalculation(ctx workflow.Context, input CalculationConfig) (Score, err
 
 	// Calculate Python dimension
 
+	// https://community.temporal.io/t/write-a-single-workflow-with-multiple-languages/1200/7
+
 	pythonRetrypolicy := &temporal.RetryPolicy{
 		InitialInterval: time.Second,
 		MaximumInterval: 100 * time.Second,
