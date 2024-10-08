@@ -40,6 +40,9 @@ func ScoreCalculation(ctx workflow.Context, input CalculationConfig) (Score, err
 		return Score{}, profileErr
 	}
 
+	//todo: parallel activities
+	// https://github.com/temporalio/samples-go/blob/main/branch/workflow.go
+
 	var dimensions []Dimension
 
 	if profileOutput.DimensionWeights["DimGo1"] > 0 || profileOutput.DimensionWeights["DimGo2"] > 0 {
